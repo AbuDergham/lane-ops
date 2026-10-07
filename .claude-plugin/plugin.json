@@ -2,6 +2,10 @@
   "name": "lane-ops",
   "displayName": "Lane ops",
   "version": "1.0.0",
-  "description": "Playbook for running a software build as coordinated lanes: one Claude coordinator per lane driving implementer agents, a partner lane on the same repo, a 10-minute heartbeat, a lane-sync coordination issue, review gates, merging by turns, conflict avoidance, CI operations, overnight autonomy and morning reports.",
-  "author": { "name": "AbuDergham" }
+  "description": "Playbook for running a software build as coordinated lanes of Claude agents: one coordinator per lane driving implementer agents, a partner lane on the same repo, a 10-minute heartbeat, a lane-sync coordination issue, review gates, merging by turns, conflict avoidance, CI operations, overnight autonomy and morning reports.",
+  "author": { "name": "AbuDergham", "url": "https://github.com/AbuDergham" },
+  "homepage": "https://github.com/AbuDergham/lane-ops",
+  "repository": "https://github.com/AbuDergham/lane-ops",
+  "license": "MIT",
+  "keywords": ["multi-agent", "coordination", "github", "ci", "code-review", "project-management", "workflow"]
 }

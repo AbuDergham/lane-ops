@@ -1,13 +1,12 @@
 {
   "name": "lane-ops",
-  "owner": { "name": "AbuDergham" },
-  "description": "Playbook plugins for running software builds as coordinated Claude lanes.",
+  "owner": { "name": "AbuDergham", "url": "https://github.com/AbuDergham" },
+  "description": "Playbook plugins for running software builds as coordinated lanes of Claude agents.",
   "plugins": [
     {
       "name": "lane-ops",
       "source": "./",
-      "description": "Playbook for coordinated multi-lane delivery with Claude coordinators, implementer agents and a partner lane.",
-      "version": "1.0.0"
+      "description": "Playbook for coordinated multi-lane delivery with Claude coordinators, implementer agents and a partner lane."
     }
   ]
 }
