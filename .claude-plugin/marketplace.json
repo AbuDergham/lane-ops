@@ -1,0 +1,12 @@
+{
+  "name": "lane-ops",
+  "owner": { "name": "AbuDergham" },
+  "plugins": [
+    {
+      "name": "lane-ops",
+      "source": "./",
+      "description": "Playbook for coordinated multi-lane delivery with Claude coordinators, implementer agents and a partner lane.",
+      "version": "1.0.0"
+    }
+  ]
+}
