@@ -1,6 +1,7 @@
 {
   "name": "lane-ops",
   "owner": { "name": "AbuDergham" },
+  "description": "Playbook plugins for running software builds as coordinated Claude lanes.",
   "plugins": [
     {
       "name": "lane-ops",
