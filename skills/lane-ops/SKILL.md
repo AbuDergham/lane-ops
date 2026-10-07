@@ -52,8 +52,7 @@ A playbook for one Claude **coordinator** session per lane. Implementer agents d
 ## Bundled files
 
 - `templates/`: the lane-sync issue body, the implementer prompt, the morning report, the session handoff.
-- `scripts/partner-check.ps1` and `scripts/partner-check.sh`: one command for the heartbeat's "what changed" view (the lane-sync channel, every issue and PR changed in the window, new comments, review comments, notifications, Jira updates).
-- `scripts/jira-ticket.ps1`: assign, move and comment on a Jira ticket with an env-var token.
+- `scripts/partner-check.ps1` and `scripts/partner-check.sh`: one command for the heartbeat's "what changed" view (the lane-sync channel, every issue and PR changed in the window, new comments, review comments, notifications). They use only the `gh` CLI's own sign-in and read no credentials. For tickets, use your tracker's own CLI (for example Atlassian's CLI for Jira).
 - `scripts/pr-review-light.js`: a workflow script (one reviewer covering all lenses, then a skeptic for the majors only) for the Workflow tool.
 
 Copy the scripts into the project's tools folder and set their parameters; don't edit them in place in the plugin cache.

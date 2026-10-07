@@ -11,8 +11,9 @@ docker volume ls -q | grep "^${L}_"
 docker network ls --format '{{.Name}}' | grep "^${L}_"
 docker images --format '{{.Repository}}:{{.Tag}}' | grep ":dev-$L$"
 git worktree list; git branch --list "*<branch>*"
-ls ../ | grep -E "secrets-$L|backups-$L"
 ```
+
+Also check for the lane's secrets and backups folders next to the repo, if your lane setup creates them.
 
 - Remove only resources of **finished lanes**. Keep the default dev stack, the CI runner stack, active lanes, paused lanes, and the owner's other projects.
 - Remove stale **watcher processes**: finished agents can leave `until grep ...` loops waiting on a log file that cleanup deleted. One ran for 16 hours.

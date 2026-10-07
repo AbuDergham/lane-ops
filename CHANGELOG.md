@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 (2026-10-07)
+
+- Removed `jira-ticket.ps1` and the Jira part of `partner-check`. The plugin's scripts now read no credentials at all; `partner-check` uses only the `gh` CLI's own sign-in. Use your ticket tracker's official CLI for tickets.
+- Added the plugin icon (`.claude-plugin/icon.png`).
+- Housekeeping notes: the lane-folder check is described in prose.
+
+
 ## 1.0.0 (2026-10-07)
 
 First public release.

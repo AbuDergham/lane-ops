@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# What changed in the last N minutes that the coordinator should know about (bash version; needs gh, jq, curl).
+# What changed in the last N minutes that the coordinator should know about (bash version; needs gh and jq).
 # Shows: the lane-sync channel (others' comments), every issue and PR that changed, new comments and review comments by
-# others, GitHub notifications (minus CI noise), and Jira issues updated in the window (optional; never prints the token).
+# others, and GitHub notifications (minus CI noise). It uses only the gh CLI and its own sign-in; it reads no credentials
+# itself. For ticket systems (Jira and others), use that system's own CLI, which manages its own sign-in.
 #
-# Usage: partner-check.sh -r owner/repo -s your-login [-m 12] [-l lane-sync] [-j JIRAKEY]
-# Jira (optional): export JIRA_EMAIL, JIRA_API_TOKEN, JIRA_BASE_URL.
+# Usage: partner-check.sh -r owner/repo -s your-login [-m 12] [-l lane-sync]
 set -u
-REPO=""; SELF=""; MIN=12; LABEL="lane-sync"; JIRA=""
-while getopts "r:s:m:l:j:" o; do case $o in r) REPO=$OPTARG;; s) SELF=$OPTARG;; m) MIN=$OPTARG;; l) LABEL=$OPTARG;; j) JIRA=$OPTARG;; *) exit 2;; esac; done
-[ -z "$REPO" ] || [ -z "$SELF" ] && { echo "usage: $0 -r owner/repo -s login [-m min] [-l label] [-j JIRAKEY]"; exit 2; }
+REPO=""; SELF=""; MIN=12; LABEL="lane-sync"
+while getopts "r:s:m:l:" o; do case $o in r) REPO=$OPTARG;; s) SELF=$OPTARG;; m) MIN=$OPTARG;; l) LABEL=$OPTARG;; *) exit 2;; esac; done
+if [ -z "$REPO" ] || [ -z "$SELF" ]; then echo "usage: $0 -r owner/repo -s login [-m min] [-l label]"; exit 2; fi
 
 if date -u -d "-${MIN} minutes" +%Y-%m-%dT%H:%M:%SZ >/dev/null 2>&1; then
   ISO=$(date -u -d "-${MIN} minutes" +%Y-%m-%dT%H:%M:%SZ)          # GNU date
@@ -16,15 +16,6 @@ else
   ISO=$(date -u -v-"${MIN}"M +%Y-%m-%dT%H:%M:%SZ)                    # BSD/macOS date
 fi
 echo "partner-check: last $MIN min"
-
-if [ -n "$JIRA" ]; then
-  if [ -n "${JIRA_EMAIL:-}" ] && [ -n "${JIRA_API_TOKEN:-}" ] && [ -n "${JIRA_BASE_URL:-}" ]; then
-    body=$(jq -n --arg jql "project = $JIRA AND updated >= \"-${MIN}m\" ORDER BY updated DESC" '{jql:$jql, fields:["summary","status","assignee","comment"], maxResults:20}')
-    curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H 'Content-Type: application/json' -X POST "$JIRA_BASE_URL/rest/api/3/search/jql" -d "$body" |
-      jq -r '.issues[]? | . as $i | ($i.fields.comment.comments | last) as $c |
-        "  jira \($i.key) [\($i.fields.status.name)] \($i.fields.summary[0:40]) | \($i.fields.assignee.displayName // "unassigned") | last comment by \($c.author.displayName // "-"): \(([$c.body.content[]?.content[]?.text] | join(" "))[0:90])"' 2>/dev/null || echo "  jira: request failed"
-  else echo "  jira: env vars not set"; fi
-fi
 
 SYNC=$(gh issue list -R "$REPO" --label "$LABEL" --state open --json number --jq '.[0].number' 2>/dev/null)
 if [ -n "$SYNC" ]; then

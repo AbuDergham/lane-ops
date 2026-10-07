@@ -24,8 +24,9 @@ The coordinator only wakes when something notifies it. Without a heartbeat, a de
    - new comments on the lane-sync channel;
    - every issue and PR in the repo that changed in the window;
    - new comments and PR review comments by others;
-   - unread notifications;
-   - tickets updated by others.
+   - unread notifications.
+
+   Check tickets updated by others with your tracker's own CLI.
 
    Answer ASKs addressed to you within this round. Tell the owner anything new.
 6. **Tickets:** every task merged since the last round is Done, with a "Merged:" comment.

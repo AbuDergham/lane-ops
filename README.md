@@ -28,7 +28,7 @@ The playbook comes from a real two-lane build, where two owners each ran a Claud
 | `references/09-housekeeping.md` | lane cleanup, Docker limits, power cuts, stale watchers |
 | `references/10-lessons.md` | 30 failure modes and how to prevent them |
 | `templates/` | the lane-sync issue body, the implementer prompt, the morning report, the session handoff |
-| `scripts/` | `partner-check` (PowerShell and bash), `jira-ticket.ps1`, and the `pr-review-light.js` workflow |
+| `scripts/` | `partner-check` (PowerShell and bash, GitHub only, no credentials read) and the `pr-review-light.js` workflow |
 
 ## Install
 
@@ -55,7 +55,7 @@ The skill loads by itself when you talk about running lanes, coordinating with a
 To start a project:
 1. Write one lane doc per lane (`references/01`).
 2. Open the coordination issue from `templates/lane-sync-issue.md`, labelled `lane-sync`.
-3. Copy `scripts/` into the project's tools folder and set the parameters (repo, your login, the optional Jira project).
+3. Copy `scripts/` into the project's tools folder and set the parameters (repo, your login).
 4. Agree the overnight rules with the owner (`references/08`).
 5. Start the heartbeat (`references/03`).
 
@@ -63,7 +63,7 @@ To start a project:
 
 - Claude Code, with sub-agents (the Agent tool) and, for the review workflow, the Workflow tool.
 - GitHub with the `gh` CLI signed in; `jq` for the bash script.
-- Optional: Jira Cloud, with `JIRA_EMAIL`, `JIRA_API_TOKEN` and `JIRA_BASE_URL` set as environment variables.
+- Optional: a ticket tracker (Jira or another) through its own official CLI. The plugin's scripts never read tracker credentials.
 - The playbook assumes Docker-based per-lane stacks and GitHub Actions. The ideas carry over to other setups.
 
 ## Contributing
