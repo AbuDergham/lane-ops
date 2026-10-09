@@ -17,6 +17,8 @@ The partner merged: <list, one line each>.
 
 ## 🤝 With the partner
 - <protocol changes, agreements, holds they granted, questions they asked and our answers>
+- <tasks traded (who builds, whose contract and review), approvals delegated between owners and when they were used>
+- <wrong claims corrected on the channel (ours or theirs)>
 
 ## 🟡 Decisions waiting for you
 1. **<topic>:** <context in two lines>.

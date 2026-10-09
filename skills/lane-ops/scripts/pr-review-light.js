@@ -9,7 +9,7 @@ export const meta = {
 
 // Run with the Workflow tool:
 //   Workflow({ scriptPath: "<path>/pr-review-light.js",
-//              args: { pr: 148, repo: "D:\\path\\to\\repo", task: "<CODE title>: <binding sources>. Check especially: <task-specific risks>",
+//              args: { pr: <n>, repo: "D:\\path\\to\\repo", task: "<CODE title>: <binding sources>. Check especially: <task-specific risks>",
 //                      sources: "<optional: the project's binding docs, e.g. docs/plans/pN/contract.md and docs/rules.md>", skeptic: true } })
 // args: { pr: number, repo: string, task: string, sources?: string, skeptic?: boolean }
 const PR = args && args.pr

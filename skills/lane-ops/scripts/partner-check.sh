@@ -19,7 +19,7 @@ echo "partner-check: last $MIN min"
 
 SYNC=$(gh issue list -R "$REPO" --label "$LABEL" --state open --json number --jq '.[0].number' 2>/dev/null)
 if [ -n "$SYNC" ]; then
-  gh api "repos/$REPO/issues/$SYNC/comments?since=$ISO" --jq ".[] | select(.user.login != \"$SELF\") | \"  sync #$SYNC \(.created_at[11:16])Z \(.user.login): \(.body | gsub(\"\n\"; \" / \") | .[0:300])\"" 2>/dev/null
+  gh api --paginate "repos/$REPO/issues/$SYNC/comments?since=$ISO&per_page=100" --jq ".[] | select(.user.login != \"$SELF\") | \"  sync #$SYNC \(.created_at[11:16])Z \(.user.login): \(.body | gsub(\"\n\"; \" / \") | .[0:300])\"" 2>/dev/null
 else echo "  sync: no open $LABEL issue found"; fi
 
 gh api "repos/$REPO/issues?state=all&sort=updated&since=$ISO&per_page=50" --jq '.[] | "  \(if .pull_request then "pr" else "issue" end) #\(.number) [\(.state)\(if .pull_request.merged_at then ",merged" else "" end)] \(.user.login): \(.title[0:60]) (upd \(.updated_at[11:16])Z)"' 2>/dev/null

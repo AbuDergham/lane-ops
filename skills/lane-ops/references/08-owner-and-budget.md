@@ -25,6 +25,8 @@
 - changes a shared convention;
 - any partner ASK marked "(needs owner)". Answer that one with "needs owner, answer in the morning".
 
+**Delegation.** An owner may let the other owner's approval stand in for theirs, for example for one night. Record it on the channel each time it's used, and list it in the morning report.
+
 **Morning report** (`templates/morning-report.md`): merged items, in-flight items, problems and how they were solved, partner news, then the **decisions waiting**, each with options and your recommendation.
 
 ## Token budget
@@ -42,8 +44,9 @@
   2. stop running workflows;
   3. write a **session handoff file** (`templates/session-handoff.md`) in the project folder;
   4. add a one-line pointer in memory;
-  5. copy session-only scripts (from the scratchpad) into the project's tools folder.
-- A new session or account starts from the handoff file, re-arms the heartbeat, and resumes agents with SendMessage where possible.
+  5. check that no script or prompt lives only in the session scratchpad. They belong in the project's tools folder from the start.
+- For a power cut, follow the protocol in `09-housekeeping.md`.
+- A new session or account starts from the handoff file, re-arms one heartbeat, reads the channel from the pause start, and resumes agents with SendMessage where possible.
 - Update the handoff file whenever a lane's state changes materially.
 
 ## Memory hygiene

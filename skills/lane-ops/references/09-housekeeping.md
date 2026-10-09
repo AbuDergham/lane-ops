@@ -15,7 +15,7 @@ git worktree list; git branch --list "*<branch>*"
 
 Also check for the lane's secrets and backups folders next to the repo, if your lane setup creates them.
 
-- Remove only resources of **finished lanes**. Keep the default dev stack, the CI runner stack, active lanes, paused lanes, and the owner's other projects.
+- Remove only resources of **finished lanes**. Keep the default dev stack, the CI runner stack, active lanes, paused lanes, the session scratchpad, the prompts folder, and the owner's other projects.
 - Remove stale **watcher processes**: finished agents can leave `until grep ...` loops waiting on a log file that cleanup deleted. One ran for 16 hours.
 
   ```powershell
@@ -34,11 +34,28 @@ Also check for the lane's secrets and backups folders next to the repo, if your 
 - **Memory.** Each lane takes about 3 to 4 GB. Cap the VM memory sensibly, and check `docker stats` before adding a lane or a local runner.
 - **Disk.** Keep the Docker VM disk on an SSD. Moving it is slow; never stop the engine in the middle of a move.
 
-## After a power cut
+## Power cuts
 
-1. Look for uncommitted work in every worktree, and WIP-commit it before you resume any agent.
-2. Restart stacks one by one. A corrupted cache append-only file (AOF) in a lane can be fixed by resetting that lane's cache volume.
-3. Re-arm the heartbeat, check the runners, re-run cancelled CI.
+**On battery, before the power goes:**
+1. Stop the implementer agents.
+2. WIP-commit and push each worktree.
+3. Bring each lane stack down, keeping the volumes.
+4. Stop the local CI runners and the heartbeat.
+5. If the owner asks, stop all containers gracefully (so databases flush), then quit the container engine and its VM.
+6. Write a resume note in the handoff file (`templates/session-handoff.md`): the pause time, the containers that ran, and what was done for each agent.
+
+**Resume:**
+1. Start the engine and restore exactly the containers that ran before, one stack at a time. A corrupted cache append-only file (AOF) in a lane can be fixed by resetting that lane's cache volume.
+2. If the cut came without warning, look for uncommitted work in every worktree, and WIP-commit it before you resume any agent.
+3. Resume each agent with a message that says what was done for it (WIP commit, push, stack down).
+4. Re-arm one heartbeat, read the channel from the pause start, check the runners, and re-run cancelled CI.
+
+## The repository README
+
+Write it by inventory, not from memory, and only when the owner asks (it is a fan-out):
+1. Readers fan out over the module groups and the platform.
+2. One writer builds the README from what is merged.
+3. A verifier spot-checks 25 or more claims against the code, marks the items that need owner input, and strips hostnames, handles and secrets. In the first pass, it found about 16 overstatements.
 
 ## Small Windows tooling traps
 

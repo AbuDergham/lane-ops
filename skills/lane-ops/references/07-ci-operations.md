@@ -6,7 +6,7 @@
 - **A CONFLICTING PR gets no `pull_request` run at all.** Without a heartbeat check on `mergeable`, a lane can wait a day for CI that never starts.
 - **Re-running a run reuses its original merge commit.** If main gained a fix since then (for example a flaky-spec fix), a re-run won't have it: merge main and push instead.
 - **Queued jobs keep the runner labels they got at creation.** After changing the routing, cancel and re-run to move them.
-- Merge with a script that checks the newest real run on the head commit, not a stale or cancelled one.
+- Merge with a script that checks the newest real run on the head commit, not a stale or cancelled one. Optionally make it refuse a PR whose newest green run predates main's head (`02-coordination.md`).
 
 ## Runner routing
 
@@ -20,6 +20,8 @@
 - On a developer PC with lane stacks running, a PHP test suite that takes 10 minutes on dedicated runners can take more than 30, and hits the job timeout after **every test has passed**. A cancelled job with "N passed" in its log is a timeout, not a failure.
 - So: bring lane stacks down while CI runs locally, cap how many local runners run at once, and move back to the remote runners as soon as their queue allows (tell the partner on the channel).
 - Cancel your own runs that will fail anyway (for example while main is red), so they don't hold runners.
+- **Know which runner ran the failing job** (the runner name in the job) before you diagnose load.
+- **Before blaming capacity, check shared helpers.** When many unrelated specs time out together, look first for a shared setup helper the PR changed (for example a signup or checkout step that every spec passes through). If you already blamed the runners on the channel, correct it quickly with INFO.
 
 ## Flakes or real failures
 
@@ -47,6 +49,7 @@ See `06-conflict-avoidance.md`. A navigation change re-baselines the screenshots
 ## Red main
 
 1. Find which merge broke it (main's push runs and the failing test).
-2. If it was your lane: post ALERT on the channel at once, fix it in **one tiny PR**, cancel your own runs that will fail anyway, merge, and post MERGED with the sha.
-3. If a fix depends on another fix (yours and the other lane's), merge them into one PR (`02-coordination.md`).
-4. Give the partner the exact fix commit, so their agents rebase and don't skip tests.
+2. **The fix-forward owner is the lane that wrote the failing test or code**, even when the other lane's merge exposed it. If that is your lane: post ALERT on the channel at once, fix it in **one tiny PR**, cancel your own runs that will fail anyway, merge, and post MERGED with the sha.
+3. The other lane holds its merges, or explicitly accepts that one known failure. Tell it when the fix lands.
+4. If a fix depends on another fix (yours and the other lane's), merge them into one PR (`02-coordination.md`).
+5. Give the partner the exact fix commit, so their agents rebase and don't skip tests.

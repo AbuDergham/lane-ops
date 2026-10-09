@@ -17,7 +17,7 @@ $iso = (Get-Date).ToUniversalTime().AddMinutes(-$Minutes).ToString('yyyy-MM-ddTH
 # The lane-sync channel: others' comments in the window.
 $sync = gh issue list -R $Repo --label $SyncLabel --state open --json number --jq '.[0].number' 2>$null
 if ($sync) {
-    gh api "repos/$Repo/issues/$sync/comments?since=$iso" --jq ".[] | select(.user.login != `"$Self`") | `"  sync #$sync \(.created_at[11:16])Z \(.user.login): \(.body | gsub(`"\n`"; `" / `") | .[0:300])`"" 2>$null
+    gh api --paginate "repos/$Repo/issues/$sync/comments?since=$iso&per_page=100" --jq ".[] | select(.user.login != `"$Self`") | `"  sync #$sync \(.created_at[11:16])Z \(.user.login): \(.body | gsub(`"\n`"; `" / `") | .[0:300])`"" 2>$null
 } else { "  sync: no open $SyncLabel issue found" }
 
 # Every issue and PR that changed in the window (both lanes).

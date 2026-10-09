@@ -29,15 +29,17 @@ One comment per message. The first line is the tag.
 
 ## Merging by turns
 
-Before merging, read this issue. If the other lane posted `MERGING #N` in the last ~30 minutes without a `MERGED #N`, wait. Post `MERGING` before you merge and `MERGED <sha>` right after.
+Before merging, read this issue. If the other lane posted `MERGING #N` without a `MERGED #N`, wait; if that claim is older than ~30 minutes with no progress, ask about it. Merge only when the PR's last green run includes the current main. Post `MERGING` before you merge and `MERGED <sha>` right after. If one PR's green run has gone stale three times, the other lane holds until it lands.
 
 ## Heartbeat
 
 Each coordinator checks this issue every 10 minutes, and reads only the comments newer than its last check:
 
 ```
-gh api "repos/<OWNER>/<REPO>/issues/<N>/comments?since=<ISO time>"
+gh api --paginate "repos/<OWNER>/<REPO>/issues/<N>/comments?since=<ISO time>"
 ```
+
+After any pause (a power cut, an account switch, sleep), read from the moment the pause started, not a fixed window.
 
 ## Rotation
 

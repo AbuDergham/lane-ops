@@ -5,19 +5,21 @@ The coordinator only wakes when something notifies it. Without a heartbeat, a de
 ## Mechanics
 
 - Run `sleep 600` as a **background** command. When it finishes, re-arm it first, then do one check round. Never chain foreground sleeps.
+- **Exactly one heartbeat timer.** Duplicates double the ticks. Before arming, check that none is already running, and stop any extras.
+- **After a pause** (a power cut, an account switch, a usage limit), the first round reads back to the moment the pause started: run `partner-check` with a window that covers it.
 - Keep each round to one or two commands. When nothing changed, say one line, or nothing.
 - For a specific event (a PR's checks finishing, a PR merging), start a background `until` loop that polls every 60 seconds and exits on the condition. Kill it when it's no longer needed.
 
 ## Checklist for each round
 
 1. **Your open PRs:** `mergeable` state, and each check's state.
-   - Green and reviewed: merge it, or make sure its agent is merging.
+   - Green and reviewed: merge it, or make sure its agent is merging. If main moved after its last green run, merge main and re-run first (`02-coordination.md`).
    - CONFLICTING: find the files (`git merge-tree --write-tree --name-only origin/main <pr-ref>`) and send the agent the list. "Keep both sides" for append-style lists.
    - A check failed: open the job log, find the failing test, and send the agent the exact test name and error. If it failed outside the agent's code, see `07-ci-operations.md`.
    - `UNKNOWN` for more than one round: check locally with `merge-tree`.
 2. **Worktrees:** last commit time, uncommitted file count, unpushed commits, and files changed in the last 30 minutes.
    - No change for 30 minutes and no test running: nudge the agent ("reply in one line with what you're doing").
-   - Uncommitted work for hours: tell the agent to commit and push work in progress (power cuts happen).
+   - Uncommitted files with a last commit older than an hour: tell the agent to commit and push work in progress now (power cuts happen). Every implementer pushes WIP at least hourly.
 3. **Runners:** online and busy states. If the remote runners go offline, switch to plan B (`07-ci-operations.md`).
 4. **Main's push CI:** catches clashes between PRs that were each green on their own.
 5. **The other lane:** use the `partner-check` script, which covers:

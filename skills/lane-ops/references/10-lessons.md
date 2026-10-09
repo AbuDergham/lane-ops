@@ -25,7 +25,7 @@ Each line: what happened, then the prevention, which is already built into the o
 13. **The first fix for 12 was wrong:** pinning the clock made a real-time webhook look 10 hours old, so it was rejected. → Run the failing test locally in a lane before pushing a fix; prefer switching the time feature off for that test.
 14. **Two fixes depended on each other across lanes.** → Combine them into one PR, by agreement.
 15. **Two e2e specs shared the same recovery codes**, so whichever ran second was stuck at the 2FA prompt. → Each spec owns its own fixture slice.
-16. **Two PRs each green on their own clashed on main.** → Watch main's push CI after merges.
+16. **Two PRs each green on their own clashed on main.** → Watch main's push CI after merges, and see 31.
 
 ## Correctness bugs the review gate caught
 
@@ -46,3 +46,27 @@ Each line: what happened, then the prevention, which is already built into the o
 28. **An agent's delete command made it stop and ask.** → Never `rm -rf`; use fresh temporary folders.
 29. **Visible console windows popped up on Windows**, from a CLI's telemetry helper. → Disable telemetry; use `bin\bash.exe`.
 30. **A usage limit hit in the middle of the work.** → Agents WIP-commit and stop; write a handoff file; resume from it.
+
+## Merging and coordination
+
+31. **Two PRs, each green on its old base, broke main together:** one renamed a class the other still used, and they merged minutes apart. → A PR's last green run must include the current main; never say "your green run stays valid" after a removal or rename.
+32. **One PR's green run went stale three times** because others kept merging first. → Fair turns: the other lane holds until it lands.
+33. **After a pause, a fixed-window read of the channel missed a request** posted two hours earlier. → Read from the moment the pause started.
+34. **A busy channel passed 100 comments**, and ad-hoc reads saw only the first page. → Read with `since=` and pagination.
+35. **A tracker helper always assigned the ticket to its caller**, which is wrong on the other lane's tickets. → Comment there with a direct call.
+36. **Many unrelated specs timed out together and "the runner is starved" was posted;** a changed shared setup helper was the cause. → Check shared helpers and the runner name first; correct wrong claims at once.
+
+## Reviews
+
+37. **The same bug class came back three times across both lanes:** a catch that deleted stored files also wrapped after-commit callbacks, so a failed notification deleted files whose rows had committed. → Name repeating classes in both lanes' reviews; add them to the checklist.
+38. **A registry refactor made a language file compute its contents at run time**, which a build plugin that parses files statically would read as empty. → Check static readers; compare the built bundle keys before and after.
+39. **Per-module registries removed the shared enum, but tests that pinned every value became the new shared list.** → Derive test expectations from the registry.
+40. **Plan and contract reviews kept going round.** → Cap at two or three rounds; record the rest as settled by the implementing task.
+41. **An early approval on a draft meant for joint review** could have let it merge before both owners signed off. → Comment on drafts; dismiss early approvals.
+
+## Agents, files and power
+
+42. **An agent's cleanup wiped a shared scratchpad of about 450 files.** → Prompts in a durable project folder; never delete or edit outside your own worktree.
+43. **Duplicate heartbeat timers doubled the ticks.** → One timer only.
+44. **A power cut on battery, with lane stacks, databases and runners up.** → The power-cut protocol, with a resume note in the handoff.
+45. **A first README draft held about 16 overstatements.** → Write by inventory; a verifier checks 25 or more claims against the code.

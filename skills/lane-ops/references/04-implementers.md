@@ -16,14 +16,18 @@
   - the full cleanup list;
   - the commit and PR attribution lines;
   - a short report format ("under 60 words").
-- Move the ticket to In Progress when you launch.
+- Keep prompts in a **durable project folder** (for example `<tools>/prompts/`), never only in the session scratchpad. An agent's cleanup once wiped a shared scratchpad of about 450 files.
+- Build each prompt from a **per-task head** (task, sources, scope, risks) plus **one shared tail** (working style, coordination, merge and cleanup rules). A rule change then reaches every prompt.
+- Don't move the ticket at launch. The implementer moves it to In Progress when its draft PR claims the task (the ticket commands in the prompt).
 
 ## Working-style rules (put them in every prompt)
 
 - **Test first.** Tests must fail without the change. A Closes item needs a test that makes the bug class impossible.
 - **Never wait blindly** on a background monitor for more than 5 minutes; check the state directly, and act as soon as CI is green.
-- **Commit and push work in progress at least every hour.**
+- **Commit and push work in progress at least every hour.** The coordinator checks it on every heartbeat.
 - **MERGEABLE before ready:** a conflicting PR gets no CI, so merge main first.
+- **The last green run must include current main.** If main moved after it, merge main, push, and wait for green again before merging.
+- **Never delete or edit files outside your own worktree and lane resources** (the merge steps in the main checkout excepted). That includes the session scratchpad and other agents' folders.
 - After merging main, if the lock files changed, reinstall dependencies in the lane. A stale vendor or `node_modules` volume breaks local runs.
 - **Bring the lane stack down** whenever you only wait for CI or review (`down --remove-orphans`, keeping the volumes).
 - Run only the affected test groups locally (with a low process count when other lanes run). CI runs the full suite.
@@ -34,8 +38,8 @@
 ## The lane lifecycle
 
 1. `git worktree add ../repo-<lane> -b <branch> origin/main`, then the project's lane setup (its own compose project name, port offset, database, cache prefix and secrets folder).
-2. Claim the task with a draft PR and a ticket comment. Build, test and push.
-3. Mark the PR ready, then message the coordinator with the PR number and a 3- or 4-line summary of the risky parts.
+2. Claim the task with a draft PR and a ticket comment, and move the ticket to In Progress. Build, test and push.
+3. Mark the PR ready, then message the coordinator at once with the PR number and a 3- or 4-line summary of the risky parts. The coordinator reviews in parallel with CI, and says "review passed" only once CI is green on a head that includes the current main.
 4. After "review passed", follow the merge protocol (`02-coordination.md`): pull main, run migrations in the main checkout, set the ticket to Done with a comment.
 5. **Full cleanup:**
    - the stack down with volumes;

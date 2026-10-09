@@ -4,7 +4,7 @@
 
 One Claude **coordinator** session runs each lane. It picks tasks, launches implementer agents, reviews and merges their PRs, keeps CI healthy, and coordinates with the coordinator of another lane (a partner team on the same repo). A human **owner** directs each lane and makes the decisions that matter.
 
-The playbook comes from a real two-lane build, where two owners each ran a Claude coordinator with 2 to 3 implementer agents, in one GitHub repo, around the clock. It holds what worked and the 30 failure modes we hit, each with its prevention.
+The playbook comes from a real two-lane build, where two owners each ran a Claude coordinator with 2 to 3 implementer agents, in one GitHub repo, around the clock. It holds what worked and the 45 failure modes we hit, each with its prevention.
 
 ## Who it's for
 
@@ -17,16 +17,16 @@ The playbook comes from a real two-lane build, where two owners each ran a Claud
 | Part | Covers |
 | --- | --- |
 | `SKILL.md` | the roles, the 7-step loop, the non-negotiables, a map of the references |
-| `references/01-lanes-and-tasks.md` | splitting work into lanes, task fields (Build, Done when, Starts when), picking and claiming, the lane cap |
-| `references/02-coordination.md` | the **lane-sync** issue channel, message tags (MERGING/MERGED/ASK/ANSWER/ALERT/INFO), merging by turns, hotfix numbers, breaking deadlocks |
+| `references/01-lanes-and-tasks.md` | splitting work into lanes, task fields (Build, Done when, Starts when), picking and claiming, trading tasks between lanes, the lane cap |
+| `references/02-coordination.md` | the **lane-sync** issue channel, message tags (MERGING/MERGED/ASK/ANSWER/ALERT/INFO), merging by turns, the "last green run includes main" rule, fair turns, hotfix numbers, breaking deadlocks |
 | `references/03-heartbeat.md` | the **10-minute heartbeat**: what to check and the exact commands |
-| `references/04-implementers.md` | implementer prompts, worktree lanes, talking to running agents |
-| `references/05-review-gate.md` | review tiers by risk, and a security checklist |
-| `references/06-conflict-avoidance.md` | finding and removing merge-conflict hot spots, screenshot baselines |
-| `references/07-ci-operations.md` | runner routing, re-runs, flakes and real failures, time-of-day tests, red main |
-| `references/08-owner-and-budget.md` | rules while the owner is away, the morning report, the token budget, usage limits, handoffs |
-| `references/09-housekeeping.md` | lane cleanup, Docker limits, power cuts, stale watchers |
-| `references/10-lessons.md` | 30 failure modes and how to prevent them |
+| `references/04-implementers.md` | implementer prompts kept in a durable folder, worktree lanes, talking to running agents |
+| `references/05-review-gate.md` | review tiers by risk, a security checklist, delta reviews, proving big refactors, reviewing the other lane's PRs |
+| `references/06-conflict-avoidance.md` | finding and removing merge-conflict hot spots, screenshot baselines, semantic clashes |
+| `references/07-ci-operations.md` | runner routing, re-runs, flakes and real failures, time-of-day tests, red main and who fixes it |
+| `references/08-owner-and-budget.md` | rules while the owner is away, delegation, the morning report, the token budget, usage limits, handoffs |
+| `references/09-housekeeping.md` | lane cleanup, Docker limits, the power-cut protocol, stale watchers, writing the README by inventory |
+| `references/10-lessons.md` | 45 failure modes and how to prevent them |
 | `templates/` | the lane-sync issue body, the implementer prompt, the morning report, the session handoff |
 | `scripts/` | `partner-check` (PowerShell and bash, GitHub only, no credentials read) and the `pr-review-light.js` workflow |
 
