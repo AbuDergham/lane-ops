@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.2.0 (2026-11-09)
+
+A heartbeat whose failures can't pass as quiet rounds. Three lanes agreed on these rules after a failed Jira check printed "ok", a GitHub outage printed nothing, and a timer died without a word.
+
+- Heartbeat rules (`references/03-heartbeat.md`, "Output that can't lie"):
+  - every section ends with an ok line or an `== ALERT:` line;
+  - "0 new" counts only from a call that succeeded;
+  - the last line is a done line, and the exit code is 1 on any ALERT;
+  - reads get a timeout and one retry, and writes are never retried blindly;
+  - lists paginate, behind an id cursor or a catch-up mark;
+  - a run stamp raises an ALERT on a heartbeat gap;
+  - an owner's pause is respected;
+  - no tokens, IP addresses or URLs in error text.
+- `partner-check.sh` and `partner-check.ps1` follow these rules for GitHub:
+  - a status line per section, and no more `2>/dev/null`;
+  - a 30 s timeout with one retry;
+  - every list paginates, and the lane-sync channel reads by id cursor;
+  - the window reaches back to the last clean round (48 h at most);
+  - `-i`/`-Interval` adds the run stamp and the gap ALERT;
+  - state lives in `$LANE_OPS_STATE` (default `~/.lane-ops`).
+
 ## 1.1.0 (2026-10-09)
 
 Lessons from a second multi-day, two-lane run, folded into the existing rules. Lessons learned grow from 30 to 45.

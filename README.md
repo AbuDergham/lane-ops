@@ -19,7 +19,7 @@ The playbook comes from a real two-lane build, where two owners each ran a Claud
 | `SKILL.md` | the roles, the 7-step loop, the non-negotiables, a map of the references |
 | `references/01-lanes-and-tasks.md` | splitting work into lanes, task fields (Build, Done when, Starts when), picking and claiming, trading tasks between lanes, the lane cap |
 | `references/02-coordination.md` | the **lane-sync** issue channel, message tags (MERGING/MERGED/ASK/ANSWER/ALERT/INFO), merging by turns, the "last green run includes main" rule, fair turns, hotfix numbers, breaking deadlocks |
-| `references/03-heartbeat.md` | the **10-minute heartbeat**: what to check and the exact commands |
+| `references/03-heartbeat.md` | the **10-minute heartbeat**: what to check, the exact commands, and output that can't lie (a failed check is an ALERT, never a quiet round) |
 | `references/04-implementers.md` | implementer prompts kept in a durable folder, worktree lanes, talking to running agents |
 | `references/05-review-gate.md` | review tiers by risk, a security checklist, delta reviews, proving big refactors, reviewing the other lane's PRs |
 | `references/06-conflict-avoidance.md` | finding and removing merge-conflict hot spots, screenshot baselines, semantic clashes |

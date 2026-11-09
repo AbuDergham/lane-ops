@@ -6,8 +6,58 @@ The coordinator only wakes when something notifies it. Without a heartbeat, a de
 
 - Run `sleep 600` as a **background** command. When it finishes, re-arm it first, then do one check round. Never chain foreground sleeps.
 - **Exactly one heartbeat timer.** Duplicates double the ticks. Before arming, check that none is already running, and stop any extras.
-- **After a pause** (a power cut, an account switch, a usage limit), the first round reads back to the moment the pause started: run `partner-check` with a window that covers it.
-- Keep each round to one or two commands. When nothing changed, say one line, or nothing.
+  - A session cron (if your host has one) can expire, for example after 7 days, without warning. Write the arm time and the expiry into the heartbeat prompt, and re-arm before it expires.
+  - A background timer can be reaped under memory pressure. Don't switch that protection off machine-wide to keep one timer alive: a reaped timer is caught by the gap check below.
+  - **Paused by the owner:** "exactly one" becomes "zero, by the owner's order". Record who paused it and when, print `== heartbeat: paused by owner since <date>`, and never re-arm on your own.
+- **After a pause** (a power cut, an account switch, a usage limit), the first round reads back to the moment the pause started. `partner-check` does this by itself: its window reaches back to the last round without alerts, 48 h at most.
+- Keep each round to one or two commands. When nothing changed, say one line, or nothing. But a failed check is never "nothing": see the next section.
+
+## Output that can't lie
+
+A check that fails must never look like a quiet round. This happened in three lanes:
+- a Jira helper printed "ok" after "No such host";
+- `2>/dev/null` turned a GitHub outage into an empty section;
+- a network error read as "a failing check";
+- first-page reads and `tail` missed partner posts five times;
+- a timer died, and the silence looked like calm.
+
+Every lane's heartbeat follows these rules (agreed by three lanes, 2026-11-09):
+
+**What it prints**
+1. **One status line per section:** `== <section>: ok (<n> new)` when it reached its source, or `== ALERT: <SECTION> CHECK FAILED: <reason, ≤80 chars>` when it didn't. An empty section never means "quiet".
+2. **"0 new" only from a call that succeeded:** the exit code is 0 and the output parses. Never hide errors with `2>$null` or `2>/dev/null`.
+3. **A red main** prints `== ALERT: <REPO> MAIN IS RED: <sha> <conclusion>`.
+4. **The last line** is `== <script>: done, <n> alert(s)`. If it's missing, the run was cut short, and that is an ALERT.
+5. **The exit code** is 1 if any ALERT was printed.
+
+**Network calls**
+
+6. **Reads** have a 30 s timeout and one retry after 5 s. Only the second failure is an ALERT.
+7. **Writes** (transitions, comments, merges) are never retried blindly. Re-read first, so nothing is posted twice. After a write, re-read the result; if it isn't what was asked, exit 1 **and** print an ALERT line.
+8. **A network error is never reported as something else**, such as "a failing check" or "permission denied".
+
+**Nothing missed**
+
+9. **Every list call paginates.**
+10. **A cursor or a catch-up mark, kept in a file:**
+    - where the source has ids, an id cursor, shown in the status line (`cursor=<id>`);
+    - otherwise, the time of the last round without alerts, which the next window reaches back to (48 h at most).
+
+    A round with alerts doesn't move the mark.
+
+**The heartbeat stays alive**
+
+11. **Liveness.**
+    - The script keeps a run stamp and prints `== heartbeat: last run <HH:MM>Z (<n> min ago)`. When the last run is older than twice the interval, it prints `== ALERT: HEARTBEAT GAP: <n> min`.
+    - The run stamp is separate from the catch-up mark: every run moves the stamp, but only a clean round moves the mark.
+    - The coordinator checks that exactly one heartbeat is armed at every session start and after any pause.
+12. **Report and re-arm.** The coordinator reports every ALERT to its owner in the same turn. It re-arms the way the mechanism needs: a sleep timer every round, a cron before it expires.
+
+**Privacy**
+
+13. **No secrets in any line.** Error text is cut short, with tokens, headers, IP addresses and URLs removed.
+
+`scripts/partner-check.sh` and `.ps1` follow rules 1–6, 8–11 and 13 for GitHub. Run them with `-i <minutes>` (or `-Interval`) on the heartbeat's own call to get the run stamp and the gap ALERT. Their state lives in `$LANE_OPS_STATE` (default `~/.lane-ops`). Your ticket and CI checks follow the same rules.
 - For a specific event (a PR's checks finishing, a PR merging), start a background `until` loop that polls every 60 seconds and exits on the condition. Kill it when it's no longer needed.
 
 ## Checklist for each round

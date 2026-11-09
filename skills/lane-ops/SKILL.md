@@ -40,7 +40,7 @@ A playbook for one Claude **coordinator** session per lane. Implementer agents d
 | --- | --- |
 | Split work, task fields, picking and claiming, trading tasks, early starts, lane cap | `references/01-lanes-and-tasks.md` |
 | Lane-sync channel, reading after a pause, message tags, merging by turns, the green-run rule, fair turns, hotfix numbers, deadlocks | `references/02-coordination.md` |
-| The 10-minute heartbeat (one timer) and its commands | `references/03-heartbeat.md` |
+| The 10-minute heartbeat (one timer), output that can't lie, and its commands | `references/03-heartbeat.md` |
 | Implementer prompts (durable folder, head plus shared tail), worktrees, nudging and resuming agents | `references/04-implementers.md` |
 | Review tiers, what to check, delta reviews, big refactors, the other lane's PRs, plan rounds | `references/05-review-gate.md` |
 | Conflict hot spots and how to remove them, semantic clashes | `references/06-conflict-avoidance.md` |
@@ -52,7 +52,7 @@ A playbook for one Claude **coordinator** session per lane. Implementer agents d
 ## Bundled files
 
 - `templates/`: the lane-sync issue body, the implementer prompt, the morning report, the session handoff.
-- `scripts/partner-check.ps1` and `scripts/partner-check.sh`: one command for the heartbeat's "what changed" view (the lane-sync channel, every issue and PR changed in the window, new comments, review comments, notifications). They use only the `gh` CLI's own sign-in and read no credentials. For tickets, use your tracker's own CLI (for example Atlassian's CLI for Jira).
+- `scripts/partner-check.ps1` and `scripts/partner-check.sh`: one command for the heartbeat's "what changed" view (the lane-sync channel by id cursor, every issue and PR changed since the last clean round, new comments, review comments, notifications), with an ok or ALERT line per section, a final done line and exit 1 on any ALERT. They use only the `gh` CLI's own sign-in and read no credentials. For tickets, use your tracker's own CLI (for example Atlassian's CLI for Jira).
 - `scripts/pr-review-light.js`: a workflow script (one reviewer covering all lenses, then a skeptic for the majors only) for the Workflow tool.
 
 Copy the scripts into the project's tools folder and set their parameters; don't edit them in place in the plugin cache.
