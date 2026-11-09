@@ -20,13 +20,15 @@ if [ -z "$REPO" ] || [ -z "$SELF" ]; then echo "usage: $0 -r owner/repo -s login
 STATE="${LANE_OPS_STATE:-$HOME/.lane-ops}/${REPO//\//_}"
 mkdir -p "$STATE" || { echo "== ALERT: PARTNER-CHECK CHECK FAILED: cannot create its state folder"; echo "== partner-check: done, 1 alert(s)"; exit 1; }
 ERRF="$STATE/last-error"
-ALERTS=0
+ALERTS=0; FAILS=0
 NOW=$(date -u +%s)
 
 iso() { date -u -d "@$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$1" +%Y-%m-%dT%H:%M:%SZ; }
 num() { case "$1" in ''|*[!0-9]*) echo "$2" ;; *) echo "$1" ;; esac; }
 upper() { echo "$1" | tr '[:lower:]' '[:upper:]'; }
 alert() { echo "== ALERT: $1"; ALERTS=$((ALERTS + 1)); }
+# A source that could not be read; only a round that read every source moves the catch-up mark.
+fail() { alert "$1"; FAILS=$((FAILS + 1)); }
 # Error text fit for a status line: one line, no URLs, IP addresses or tokens, at most 80 characters.
 clean() { tr '\r\n' '  ' | sed -E 's#[a-zA-Z]+://[^ ]+#<url>#g; s#[0-9]{1,3}(\.[0-9]{1,3}){3}#<ip>#g; s#(gh[pousr]_|github_pat_)[A-Za-z0-9_]+#<token>#g' | cut -c1-80; }
 
@@ -50,7 +52,7 @@ section() {
     if [ -n "$out" ]; then printf '%s\n' "$out"; n=$(printf '%s\n' "$out" | wc -l | tr -d ' '); fi
     echo "== $name: ok ($n new)"
   else
-    alert "$(upper "$name") CHECK FAILED: $(cat "$ERRF")"
+    fail "$(upper "$name") CHECK FAILED: $(cat "$ERRF")"
   fi
 }
 
@@ -92,11 +94,11 @@ if SYNC=$(read_gh issue list -R "$REPO" --label "$LABEL" --state open --json num
       fi
       echo "== sync #$SYNC: ok ($N new, cursor=$CUR)"
     else
-      alert "SYNC CHECK FAILED: $(cat "$ERRF")"
+      fail "SYNC CHECK FAILED: $(cat "$ERRF")"
     fi
   fi
 else
-  alert "SYNC CHECK FAILED: $(cat "$ERRF")"
+  fail "SYNC CHECK FAILED: $(cat "$ERRF")"
   SYNC=""
 fi
 
@@ -114,8 +116,8 @@ section review-comments api --paginate "repos/$REPO/pulls/comments?since=$ISO&pe
 section notifications api --paginate "notifications?all=true&since=$ISO" \
   --jq '.[] | select(.reason != "ci_activity") | "  gh \(.reason) \(.subject.type): \(.subject.title[0:70]) (\(.updated_at[11:16])Z)"'
 
-# Only a round without alerts moves the catch-up mark.
-[ $ALERTS -eq 0 ] && echo "$NOW" > "$STATE/mark"
+# Only a round that read every source moves the catch-up mark (a heartbeat gap alone does not hold it back).
+[ $FAILS -eq 0 ] && echo "$NOW" > "$STATE/mark"
 rm -f "$ERRF.raw"
 echo "== partner-check: done, $ALERTS alert(s)"
 exit $(( ALERTS > 0 ? 1 : 0 ))

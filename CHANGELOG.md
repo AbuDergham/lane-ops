@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 (2026-11-09)
+
+- `partner-check`: a round whose only alert is a heartbeat gap still moves the catch-up mark, since it read every source. Only a source that could not be read holds the mark back. (From Lane 2.)
+
 ## 1.2.0 (2026-11-09)
 
 A heartbeat whose failures can't pass as quiet rounds. Three lanes agreed on these rules after a failed Jira check printed "ok", a GitHub outage printed nothing, and a timer died without a word.

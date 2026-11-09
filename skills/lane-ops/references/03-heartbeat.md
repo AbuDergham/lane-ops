@@ -41,15 +41,15 @@ Every lane's heartbeat follows these rules (agreed by three lanes, 2026-11-09):
 9. **Every list call paginates.**
 10. **A cursor or a catch-up mark, kept in a file:**
     - where the source has ids, an id cursor, shown in the status line (`cursor=<id>`);
-    - otherwise, the time of the last round without alerts, which the next window reaches back to (48 h at most).
+    - otherwise, the time of the last round that read every source, which the next window reaches back to (48 h at most).
 
-    A round with alerts doesn't move the mark.
+    A round where any source failed doesn't move the mark. A round whose only alert is a heartbeat gap does, since it read every source.
 
 **The heartbeat stays alive**
 
 11. **Liveness.**
     - The script keeps a run stamp and prints `== heartbeat: last run <HH:MM>Z (<n> min ago)`. When the last run is older than twice the interval, it prints `== ALERT: HEARTBEAT GAP: <n> min`.
-    - The run stamp is separate from the catch-up mark: every run moves the stamp, but only a clean round moves the mark.
+    - The run stamp is separate from the catch-up mark: every run moves the stamp, but only a round that read every source moves the mark.
     - The coordinator checks that exactly one heartbeat is armed at every session start and after any pause.
 12. **Report and re-arm.** The coordinator reports every ALERT to its owner in the same turn. It re-arms the way the mechanism needs: a sleep timer every round, a cron before it expires.
 

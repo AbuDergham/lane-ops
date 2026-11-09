@@ -25,9 +25,12 @@ $root = if ($env:LANE_OPS_STATE) { $env:LANE_OPS_STATE } else { Join-Path $HOME 
 $state = Join-Path $root ($Repo -replace '/', '_')
 New-Item -ItemType Directory -Force -Path $state | Out-Null
 $script:alerts = 0
+$script:fails = 0
 $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 
 function Alert([string] $text) { "== ALERT: $text"; $script:alerts++ }
+# A source that could not be read; only a round that read every source moves the catch-up mark.
+function Fail([string] $text) { Alert $text; $script:fails++ }
 function StateNum([string] $name, $default) {
     $p = Join-Path $state $name
     if (Test-Path $p) { $v = (Get-Content $p -Raw).Trim(); if ($v -match '^\d+$') { return [long]$v } }
@@ -70,7 +73,7 @@ function ReadGh([string[]] $ghArgs) {
 function Section([string] $name, [string[]] $ghArgs) {
     $r = ReadGh $ghArgs
     if ($r.ok) { $lines = @($r.out | Where-Object { $_ }); $lines; "== ${name}: ok ($($lines.Count) new)" }
-    else { Alert "$($name.ToUpper()) CHECK FAILED: $($r.err)" }
+    else { Fail "$($name.ToUpper()) CHECK FAILED: $($r.err)" }
 }
 
 # The heartbeat's own run stamp (with -Interval): a dead timer can't report itself, so the next run does.
@@ -93,14 +96,14 @@ $iso = [DateTimeOffset]::FromUnixTimeSeconds($from).UtcDateTime.ToString('yyyy-M
 # The lane-sync channel: others' comments after the id cursor, every page.
 $sync = ''
 $r = ReadGh @('issue', 'list', '-R', $Repo, '--label', $SyncLabel, '--state', 'open', '--json', 'number', '--jq', '.[0].number')
-if (-not $r.ok) { Alert "SYNC CHECK FAILED: $($r.err)" }
+if (-not $r.ok) { Fail "SYNC CHECK FAILED: $($r.err)" }
 elseif (-not ($r.out -join '').Trim()) { "== sync: ok (no open $SyncLabel issue)" }
 else {
     $sync = ($r.out -join '').Trim()
     $cur = StateNum 'sync-cursor' 0
     $rows = ReadGh @('api', '--paginate', "repos/$Repo/issues/$sync/comments?since=$iso&per_page=100", '--jq',
         ".[] | select(.id > $cur) | `"\(.id)\t\(.user.login)\t\(.created_at[11:16])Z\t\(.body | gsub(`"[\r\n]+`"; `" / `") | .[0:300])`"")
-    if (-not $rows.ok) { Alert "SYNC CHECK FAILED: $($rows.err)" }
+    if (-not $rows.ok) { Fail "SYNC CHECK FAILED: $($rows.err)" }
     else {
         $n = 0
         foreach ($row in @($rows.out | Where-Object { $_ })) {
@@ -128,7 +131,7 @@ Section 'review-comments' @('api', '--paginate', "repos/$Repo/pulls/comments?sin
 Section 'notifications' @('api', '--paginate', "notifications?all=true&since=$iso", '--jq',
     '.[] | select(.reason != "ci_activity") | "  gh \(.reason) \(.subject.type): \(.subject.title[0:70]) (\(.updated_at[11:16])Z)"')
 
-# Only a round without alerts moves the catch-up mark.
-if ($script:alerts -eq 0) { SetState 'mark' $now }
+# Only a round that read every source moves the catch-up mark (a heartbeat gap alone does not hold it back).
+if ($script:fails -eq 0) { SetState 'mark' $now }
 "== partner-check: done, $($script:alerts) alert(s)"
 exit ([int]($script:alerts -gt 0))
